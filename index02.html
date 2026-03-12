@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kódellenőrzés</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: url('shutterstock_518160511.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        .logo {
+            margin-top: 40px;
+            width: 160px;
+            max-width: 65%;
+        }
+
+        .box {
+            background: rgba(255, 255, 255, 0.85);
+            padding: 20px;
+            margin-top: 40px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 380px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+        }
+
+        .labels, .inputs {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .labels div {
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .inputs input {
+            font-size: 24px;
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #999;
+        }
+
+        button {
+            width: 100%;
+            font-size: 18px;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 8px;
+            border: none;
+            background-color: #0078ff;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #005fcc;
+        }
+
+        #message {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <img src="Picture2.png" class="logo">
+
+    <div class="box">
+        <h2>Add meg a 6 számjegyű kódot!</h2>
+
+        <!-- CÍMKÉK A KOCKÁK FELETT -->
+        <div class="labels">
+            <div>PCC</div>
+            <div>AT</div>
+            <div>DRL</div>
+            <div>FC</div>
+            <div>PWR</div>
+            <div>CC</div>
+        </div>
+
+        <!-- 6 KÜLÖN KOCKA -->
+        <div class="inputs">
+            <input id="d1" maxlength="1" inputmode="numeric">
+            <input id="d2" maxlength="1" inputmode="numeric">
+            <input id="d3" maxlength="1" inputmode="numeric">
+            <input id="d4" maxlength="1" inputmode="numeric">
+            <input id="d5" maxlength="1" inputmode="numeric">
+            <input id="d6" maxlength="1" inputmode="numeric">
+        </div>
+
+        <button onclick="checkCode()">Ellenőrzés</button>
+
+        <div id="message"></div>
+    </div>
+
+<script>
+    const correctCode = "123456";  // <-- Itt tudod átírni a helyes kódot
+
+    // Automatikus fókusz a következő mezőre
+    const inputs = document.querySelectorAll(".inputs input");
+
+    inputs.forEach((input, index) => {
+        input.addEventListener("input", () => {
+            if (input.value.length === 1 && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+        });
+    });
+
+    function checkCode() {
+        const code =
+            document.getElementById("d1").value +
+            document.getElementById("d2").value +
+            document.getElementById("d3").value +
+            document.getElementById("d4").value +
+            document.getElementById("d5").value +
+            document.getElementById("d6").value;
+
+        const msg = document.getElementById("message");
+
+        if (code === correctCode) {
+            msg.style.color = "green";
+            msg.textContent = "Sikeres belépés! 🎉 Nektek köszönhetően sikeresen elindult az EGIS új SAP S/4HANA rendeszere! A SHERINA program sikerült, gratulálunk! Már csak egy feladat van hátra. Az alábbi üzenetet vidd el a projektmenedzsernek, hogy tudja, hogy elindult az éles rendszer: SHERINYÁLNI SE FELADNI NEM SZABAD!";
+        } else {
+            msg.style.color = "red";
+            msg.textContent = "Hibás kód! Próbáld újra.";
+        }
+    }
+</script>
+
+</body>
+</html>
