@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kódellenőrzés</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: url('shutterstock_518160511.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        .logo {
+            margin-top: 40px;
+            width: 160px;
+            max-width: 65%;
+        }
+
+        .box {
+            background: rgba(255, 255, 255, 0.85);
+            padding: 20px;
+            margin-top: 40px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 360px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+        }
+
+        input, button {
+            width: 100%;
+            font-size: 18px;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 8px;
+            border: 1px solid #999;
+        }
+
+        button {
+            background-color: #0078ff;
+            border: none;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #005fcc;
+        }
+
+        #message {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <img src="deloitte-logo.jpg" class="logo" alt="Céges logó">
+
+    <div class="box">
+        <h2>Kérlek add meg a 6 számjegyű SAP GO-LIVE kódot!</h2>
+
+        <input type="tel" id="codeInput" maxlength="6" pattern="[0-9]*" inputmode="numeric" placeholder="••••••">
+        <button onclick="checkCode()">Ellenőrzés</button>
+
+        <div id="message"></div>
+    </div>
+
+    <script>
+        const correctCode = "123456"; //
+
+        function checkCode() {
+            const input = document.getElementById("codeInput").value;
+            const msg = document.getElementById("message");
+
+            if (input === correctCode) {
+                msg.style.color = "green";
+                msg.textContent = "Sikeres belépés! 🎉 Nektek köszönhetően sikeresen elindult az EGIS új SAP S/4HANA rendeszere, a SHERINA program sikerült! Gratulálunk";
+            } else {
+                msg.style.color = "red";
+                msg.textContent = "Hibás kód! Próbáld újra.";
+            }
+        }
+    </script>
+
+</body>
+</html>
