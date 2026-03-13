@@ -5,11 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Kódellenőrzés</title>
   <style>
+    /* Alap reset a kiszámítható méretekhez */
+    *, *::before, *::after { box-sizing: border-box; }
+
     :root{
-      /* Négyzetek méretezése: min 40px, mobilon rugalmas, desktopon max 56px */
-      --cell-size: clamp(40px, 12vw, 56px);
-      --gap: 10px;
+      /* Alap hézag; kicsi kijelzőn tovább csökkentjük */
+      --gap: 8px;
       --brand: #0078ff;
+
+      /* A doboz belső vízszintes paddingje (bal+jobb) kb. 32px */
+      --container-padding-x: 32px;
     }
 
     body{
@@ -25,66 +30,81 @@
       text-align:center;
     }
 
-    /* Logó a tetején (ha kell, állíts méretet) */
     .logo{
-      margin-top: 28px;
-      width: 160px;
+      margin-top: 24px;
+      width: 150px;
       max-width: 65%;
       height: auto;
     }
 
     .box{
-      background: rgba(255,255,255,0.9);
-      padding: 20px 16px;
-      margin: 28px 14px 40px;
+      background: rgba(255,255,255,0.92);
+      padding: 18px 16px;
+      margin: 24px 14px 36px;
       border-radius: 12px;
       width: 100%;
       max-width: 420px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.22);
     }
 
     h2{
-      margin: 6px 0 16px;
-      font-size: 20px;
+      margin: 4px 0 14px;
+      font-size: 18px;
     }
 
-    /* Rács: 6 oszlop, kis hézaggal, középre igazítva */
+    /**
+     * Responsív cellaméret: az elérhető szélességet elosztjuk 6 oszloppal és 5 résekkel.
+     * Számítás: (box szélesség - belső vízszintes padding - 5*gap) / 6
+     * A box szélességét 100vw-hez kötjük, de legfeljebb 420px-ig.
+     */
     .code-grid{
+      --box-max: 420px;
+      --safe-width: min(100vw, var(--box-max));
+      --inner-width: calc(var(--safe-width) - var(--container-padding-x));
+      --cell-size: calc((var(--inner-width) - (5 * var(--gap))) / 6);
+
       display: grid;
-      grid-template-columns: repeat(6, var(--cell-size));
+      grid-template-columns: repeat(6, minmax(34px, var(--cell-size)));
       justify-content: center;
       gap: var(--gap);
-      margin: 0 auto 12px;
+      margin: 0 auto 10px;
       width: 100%;
-      max-width: calc(6 * var(--cell-size) + 5 * var(--gap));
+      max-width: var(--box-max);
     }
 
-    /* Egy cella: felül label, alatta a négyzet input */
+    /* Extra biztonsági korlát: ha még így is nagy lenne, kicsinyítjük */
+    @media (max-width: 360px){
+      :root{ --gap: 6px; }
+    }
+
+    /* Egy cella: felül label, alatta a négyzet input; minden fixen középen */
     .cell{
       display: flex;
       flex-direction: column;
       align-items: center;
-      width: var(--cell-size);
     }
 
     .label{
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
       line-height: 1;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
       color: #333;
       white-space: nowrap;
+      text-align: center;
     }
 
     .digit{
-      width: var(--cell-size);
-      height: var(--cell-size);
+      width: 100%;
+      /* 1:1 arány – magasság = szélesség */
+      aspect-ratio: 1 / 1;
       text-align: center;
-      font-size: clamp(18px, 5vw, 24px);
+      font-size: 20px;            /* >=16px, hogy iOS ne zoomoljon */
       border: 1px solid #9aa0a6;
-      border-radius: 10px;
+      border-radius: 9px;
       outline: none;
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      background-color: #fff;
     }
     .digit:focus{
       border-color: var(--brand);
@@ -93,7 +113,6 @@
 
     button{
       width: 100%;
-      max-width: 420px;
       font-size: 16px;
       padding: 12px;
       margin-top: 12px;
@@ -107,15 +126,10 @@
     button:hover{ background-color: #005fcc; }
 
     #message{
-      margin-top: 14px;
+      margin-top: 12px;
       font-size: 16px;
       font-weight: bold;
-    }
-
-    /* Kis képernyőn is biztos férjen: ha nagyon keskeny, csökkentjük a gap-et */
-    @media (max-width: 360px){
-      :root{ --gap: 8px; }
-      .label{ font-size: 10px; }
+      min-height: 1.2em; /* hogy ne ugráljon a layout */
     }
   </style>
 </head>
@@ -165,21 +179,17 @@
     const checkBtn = document.getElementById("checkBtn");
 
     // Automatikus fókusz az első mezőre
-    inputs[0].focus();
+    window.setTimeout(() => { inputs[0]?.focus(); }, 0);
 
-    // Segédfüggvény: csak számot engedünk be
-    function onlyDigit(str){
-      return (str || "").replace(/\\D/g, "");
-    }
+    function onlyDigit(str){ return (str || "").replace(/\D/g, ""); }
 
-    // Beillesztés: ha valaki 6 számot illeszt be, szétszórjuk a mezőkbe
+    // Beillesztés támogatás (szétosztja a karaktereket)
     inputs.forEach((inp, idx) => {
       inp.addEventListener("paste", (e) => {
         const text = onlyDigit((e.clipboardData || window.clipboardData).getData("text"));
         if(!text) return;
         e.preventDefault();
         const chars = text.split("").slice(0, inputs.length - idx);
-        // Töltsük az aktuális és a további mezőket
         for(let i = 0; i < chars.length; i++){
           inputs[idx + i].value = chars[i];
         }
@@ -188,7 +198,7 @@
       });
     });
 
-    // Input: egy karakter után lépjen tovább
+    // Input és navigáció
     inputs.forEach((inp, idx) => {
       inp.addEventListener("input", () => {
         inp.value = onlyDigit(inp.value).slice(0,1);
@@ -197,14 +207,12 @@
         }
       });
 
-      // Backspace: ha üres és nem az első, lépjünk vissza
       inp.addEventListener("keydown", (e) => {
         if(e.key === "Backspace" && inp.value === "" && idx > 0){
           inputs[idx - 1].focus();
           inputs[idx - 1].value = "";
           e.preventDefault();
         }
-        // Bal/Jobb nyíl navigáció
         if(e.key === "ArrowLeft" && idx > 0){
           inputs[idx - 1].focus();
           e.preventDefault();
@@ -213,18 +221,13 @@
           inputs[idx + 1].focus();
           e.preventDefault();
         }
-        // Enter: ellenőrzés
-        if(e.key === "Enter"){
-          checkCode();
-        }
+        if(e.key === "Enter"){ checkCode(); }
       });
     });
 
     checkBtn.addEventListener("click", checkCode);
 
-    function getCode(){
-      return inputs.map(i => i.value || "").join("");
-    }
+    function getCode(){ return inputs.map(i => i.value || "").join(""); }
 
     function checkCode(){
       const code = getCode();
@@ -236,14 +239,11 @@
       if(code === correctCode){
         msg.style.color = "green";
         msg.textContent = "Sikeres belépés! 🎉 Nektek köszönhetően sikeresen elindult az EGIS új SAP S/4HANA rendeszere! A SHERINA program sikerült, gratulálunk! Már csak egy feladat van hátra. Az alábbi üzenetet vidd el a projektmenedzsernek, hogy tudja, hogy elindult az éles rendszer: SHERINYÁLNI SE FELADNI NEM SZABAD!";
-        // Itt átirányíthatsz, ha szeretnéd:
+        // Siker esetén átirányíthatod pl.:
         // window.location.href = "success.html";
       }else{
         msg.style.color = "#b00020";
         msg.textContent = "Hibás kód! Próbáld újra.";
-        // Opció: ürítsük ki és fókusz vissza az elsőre
-        // inputs.forEach(i => i.value = "");
-        // inputs[0].focus();
       }
     }
   </script>
